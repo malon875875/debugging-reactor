@@ -21,6 +21,22 @@ public class DebuggingReactorApplication {
     @EventListener(ApplicationReadyEvent.class)
     public void go() throws Exception {
 
+//        ChoicesEnum choice = ChoicesEnum.OPTION_HANDLE_ERROR_IN_SUBSCRIBER;
+        ChoicesEnum choice = ChoicesEnum.OPTION_HANDLE_ERROR_IN_PUBLISHER;
+
+        switch (choice) {
+            case OPTION_HANDLE_ERROR_IN_SUBSCRIBER:
+                doErrorHandlingOption1();
+                break;
+            case OPTION_HANDLE_ERROR_IN_PUBLISHER:
+                doErrorHandlingOption2();
+                break;
+            default:
+                throw new RuntimeException();
+        }
+    }
+
+    private void doErrorHandlingOption1() {
         // Mono is a Stream of 0 to 1 records - e.g. A
         // Flux is a Stream of 0 to n records - e.g. A, B, C, ..., n
         // Consumer subscribes to Producer of the stream
@@ -40,8 +56,14 @@ public class DebuggingReactorApplication {
 //                );
 
 
+
+        /**
+         *
+         * Option 1: have the error handling of the hot stream in the Subscriber
+         *
+         * */
         //add error -- keep all letters but F
-        // Flux<String> letters is a cold stream as no subscribers are there - nothing happens
+        //      Flux<String> letters is a cold stream as no subscribers are there - nothing happens
         Flux<String> letters = Flux.just("A", "B", "C", "D", "F")
                 .flatMap( letter -> {
                     if (letter.equals("F")) {
@@ -50,7 +72,9 @@ public class DebuggingReactorApplication {
                     else {
                         return Mono.just(letter);
                     }
-                });
+                })
+                .log() //log out what the stream is doing once it is hot -- Subscriber(Consumer letter) subscribes to Producer of Stream, onNext(A), new letter A, onNext(B), ..... onError()
+                ;
 
         // Flux<String> letters is a hot stream as subscribers push back
         // subscribe takes parameters:
@@ -65,6 +89,36 @@ public class DebuggingReactorApplication {
 //                }
                 this::doPrintError
         );
+    }
+
+    private void doErrorHandlingOption2() {
+        /**
+         *
+         * Option 2: have the error handling of the hot stream in the Publisher
+         *
+         * */
+
+        //add error -- keep all letters but F
+        //      Flux<String> letters is a cold stream as no subscribers are there - nothing happens
+        Flux<String> letters = Flux.just("AA", "BB", "CC", "DD", "F")
+                .flatMap( letter -> {
+                    if (letter.equals("F")) {
+                        return Mono.error(new IllegalLetterException());
+                    }
+                    else {
+                        return Mono.just(letter);
+                    }
+                })
+                .log() //log out what the stream is doing once it is hot -- Subscriber(Consumer letter) subscribes to Producer of Stream, onNext(A), new letter A, onNext(B), ..... onError()
+                .doOnError(this::doPrintError)
+                ;
+
+        // Flux<String> letters is a hot stream as subscribers push back
+        // subscribe takes parameters:
+        //          consumer – the consumer to invoke on each next signal  -- letter -> log.info("new letter" + letter)
+        //          errorConsumer – the consumer to invoke on error signal -- this::doPrintError
+        Consumer<String> consumer = letter -> log.info("new letter " + letter);
+        letters.subscribe(consumer); // Subscriber does not have to know how to deal with errors, instead Producer handles errors in doOnError
     }
 
     private void doPrintError(Throwable t) {
