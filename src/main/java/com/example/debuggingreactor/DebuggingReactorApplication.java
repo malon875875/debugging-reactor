@@ -6,6 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.function.Consumer;
 
@@ -14,9 +15,7 @@ import java.util.function.Consumer;
 public class DebuggingReactorApplication {
 
     public static void main(String[] args) {
-
         SpringApplication.run(DebuggingReactorApplication.class, args);
-
     }
 
     @EventListener(ApplicationReadyEvent.class)
@@ -35,9 +34,34 @@ public class DebuggingReactorApplication {
 //        );
 
         // replace Consumer with lambda
-        Flux.just("A", "B", "C", "D", "F")
-                .subscribe(
-                        letter -> log.info("new letter" + letter)
-                );
+//        Flux.just("A", "B", "C", "D", "F")
+//                .subscribe(
+//                        letter -> log.info("new letter" + letter)
+//                );
+
+
+        //add error -- keep all letters but F
+        // Flux<String> letters is a cold stream as no subscribers are there - nothing happens
+        Flux<String> letters = Flux.just("A", "B", "C", "D", "F")
+                .flatMap( letter -> {
+                    if (letter.equals("F")) {
+                        return Mono.error(new IllegalLetterException());
+                    }
+                    else {
+                        return Mono.just(letter);
+                    }
+                });
+
+        // Flux<String> letters is a hot stream as subscribers push back
+        Consumer<String> consumer = letter -> log.info("new letter" + letter);
+        letters.subscribe(
+                letter -> log.info("new letter" + letter)
+        );
+    }
+
+    static class IllegalLetterException extends RuntimeException {
+        public IllegalLetterException() {
+            super("can't be an F! no F's!");
+        }
     }
 }
