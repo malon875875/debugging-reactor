@@ -53,10 +53,23 @@ public class DebuggingReactorApplication {
                 });
 
         // Flux<String> letters is a hot stream as subscribers push back
-        Consumer<String> consumer = letter -> log.info("new letter" + letter);
+        // subscribe takes parameters:
+        //          consumer – the consumer to invoke on each next signal  -- letter -> log.info("new letter" + letter)
+        //          errorConsumer – the consumer to invoke on error signal -- this::doPrintError
+        Consumer<String> consumer = letter -> log.info("new letter " + letter);
         letters.subscribe(
-                letter -> log.info("new letter" + letter)
+                //letter -> log.info("new letter" + letter)
+                consumer,
+//                throwable -> {
+//                    log.error(throwable);
+//                }
+                this::doPrintError
         );
+    }
+
+    private void doPrintError(Throwable t) {
+        log.error("OH NOES!");
+        log.error(t);
     }
 
     static class IllegalLetterException extends RuntimeException {
