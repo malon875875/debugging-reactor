@@ -18,6 +18,8 @@ import java.util.function.Function;
 public class DebuggingReactorApplication {
 
     public static void main(String[] args) {
+        //Hooks.onOperatorDebug();
+
         SpringApplication.run(DebuggingReactorApplication.class, args);
     }
 
@@ -26,7 +28,8 @@ public class DebuggingReactorApplication {
 
 //        ChoicesEnum choice = ChoicesEnum.OPTION_HANDLE_ERROR_IN_SUBSCRIBER;
 //        ChoicesEnum choice = ChoicesEnum.OPTION_HANDLE_ERROR_IN_PUBLISHER;
-        ChoicesEnum choice = ChoicesEnum.OPTION_HANDLE_ERROR_IN_PUBLISHER_CHECKPOINT;
+//        ChoicesEnum choice = ChoicesEnum.OPTION_HANDLE_ERROR_IN_PUBLISHER_CHECKPOINT;
+          ChoicesEnum choice = ChoicesEnum.OPTION_HANDLE_ERROR_IN_PUBLISHER_HOOK;
 
         switch (choice) {
             case OPTION_HANDLE_ERROR_IN_SUBSCRIBER:
@@ -36,6 +39,14 @@ public class DebuggingReactorApplication {
                 doErrorHandlingOption2();
                 break;
             case OPTION_HANDLE_ERROR_IN_PUBLISHER_CHECKPOINT:
+                doErrorHandlingOption3();
+                break;
+            case OPTION_HANDLE_ERROR_IN_PUBLISHER_HOOK:
+                /**
+                 * hook gives a more useful and comprehensive assembly stacktrace -- cold stream
+                 * in real app, add it as early as possible, e.g. Spring Boot main method
+                 */
+                Hooks.onOperatorDebug();
                 doErrorHandlingOption3();
                 break;
             default:
