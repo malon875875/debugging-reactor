@@ -18,7 +18,7 @@ import java.util.function.Function;
 public class DebuggingReactorApplication {
 
     public static void main(String[] args) {
-        //Hooks.onOperatorDebug();
+        // TODO@marcos continue https://youtu.be/0oI_-xBhAK8?t=2244
 
         SpringApplication.run(DebuggingReactorApplication.class, args);
     }
