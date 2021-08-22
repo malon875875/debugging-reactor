@@ -9,6 +9,7 @@ import org.springframework.context.event.EventListener;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Hooks;
 import reactor.core.publisher.Mono;
+import reactor.tools.agent.ReactorDebugAgent;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -18,8 +19,6 @@ import java.util.function.Function;
 public class DebuggingReactorApplication {
 
     public static void main(String[] args) {
-        // TODO@marcos continue https://youtu.be/0oI_-xBhAK8?t=2244
-
         SpringApplication.run(DebuggingReactorApplication.class, args);
     }
 
@@ -29,7 +28,8 @@ public class DebuggingReactorApplication {
 //        ChoicesEnum choice = ChoicesEnum.OPTION_HANDLE_ERROR_IN_SUBSCRIBER;
 //        ChoicesEnum choice = ChoicesEnum.OPTION_HANDLE_ERROR_IN_PUBLISHER;
 //        ChoicesEnum choice = ChoicesEnum.OPTION_HANDLE_ERROR_IN_PUBLISHER_CHECKPOINT;
-          ChoicesEnum choice = ChoicesEnum.OPTION_HANDLE_ERROR_IN_PUBLISHER_HOOK;
+//          ChoicesEnum choice = ChoicesEnum.OPTION_HANDLE_ERROR_IN_PUBLISHER_HOOK;
+        ChoicesEnum choice = ChoicesEnum.OPTION_HANDLE_ERROR_IN_PUBLISHER_PLUS_REACTOR_DEBUG_AGENT;
 
         switch (choice) {
             case OPTION_HANDLE_ERROR_IN_SUBSCRIBER:
@@ -49,6 +49,28 @@ public class DebuggingReactorApplication {
                 Hooks.onOperatorDebug();
                 doErrorHandlingOption3();
                 break;
+
+            case OPTION_HANDLE_ERROR_IN_PUBLISHER_PLUS_REACTOR_DEBUG_AGENT:
+                /**
+                 * Reactor Debug Agent preprocesses the application's code before the application starts up
+                 * it gives a more useful and comprehensive assembly stacktrace -- cold stream
+                 *
+                 * in real app, add it as early as possible, e.g. Spring Boot main method
+                 *
+                 * with Reactor Agent, Hook is not longer needed, see explanation in https://github.com/reactor/reactor-tools
+                 *
+                 * https://www.youtube.com/watch?v=0oI_-xBhAK8&t=2244s
+                 * https://projectreactor.io/docs/core/release/reference/index.html#reactor-tools-debug
+                 * https://github.com/reactor/reactor-tools
+                 * https://github.com/reactor/reactor-core
+                 *
+                 *
+                 */
+                //Hooks.onOperatorDebug(); // not needed any longer, see explanation in https://github.com/reactor/reactor-tools
+                ReactorDebugAgent.init();
+                doErrorHandlingOption3();
+                break;
+            // Reactor Debug Agent
             default:
                 throw new RuntimeException();
         }

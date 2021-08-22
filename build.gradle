@@ -22,6 +22,9 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok:1.18.20'
 	testCompileOnly 'org.projectlombok:lombok:1.18.20'
 	testAnnotationProcessor 'org.projectlombok:lombok:1.18.20'
+
+	// Reactor Debug Agent
+	compile 'io.projectreactor:reactor-tools:3.4.9'
 }
 
 test {
