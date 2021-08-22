@@ -8,5 +8,5 @@ also, look up Reactor Debug Agent
 * Download Reactor Tools as explained in https://projectreactor.io/docs/core/release/reference/index.html#reactor-tools-debug
 
 ## summary
-* use Checkpoints
-* use Reactor Debug Agent
+* use [Checkpoints](https://projectreactor.io/docs/core/release/reference/index.html#checkpoint-alternative)
+* use [Reactor Debug Agent](https://projectreactor.io/docs/core/release/reference/index.html#reactor-tools-debug)
